@@ -1,24 +1,90 @@
 "use client"
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from "react"
+import { useTheme as useNextTheme } from "next-themes"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import TaskDetailDialog from "@/components/Tasks/TaskDetailDialog"
+import TaskAddDialog from "@/components/Tasks/TaskAddDialog"
 
-const statusOptions = ['pending', 'in_progress', 'completed', 'canceled']
-const priorityOptions = ['low', 'medium', 'high', 'urgent']
+const statusColors = {
+  pending: "bg-yellow-400 text-yellow-900",
+  in_progress: "bg-blue-500 text-blue-50",
+  completed: "bg-green-500 text-green-50",
+  canceled: "bg-gray-500 text-gray-100",
+}
+
+const priorityColors = {
+  low: "bg-blue-100 text-blue-700",
+  medium: "bg-yellow-200 text-yellow-800",
+  high: "bg-orange-400 text-orange-900",
+  urgent: "bg-red-500 text-red-50",
+}
+
+// For filter
+const statusFilterOptions = [
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "canceled", label: "Canceled" },
+]
+const priorityFilterOptions = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" },
+]
+
+// For form (no "all" option)
+const statusOptions = [
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "canceled", label: "Canceled" },
+]
+const priorityOptions = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" },
+]
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState({
-    status: '',
-    priority: '',
-    q: '',
-    tags: '',
+    status: "",
+    priority: "",
+    q: "",
+    tags: "",
     page: 1,
-    pageSize: 10,
+    pageSize: 10,  
+    startFrom: "",  
+  endTo: "",      
   })
-  const [editingTask, setEditingTask] = useState(null)
-  const [form, setForm] = useState({})
+  const [showDialog, setShowDialog] = useState(false)
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    status: "pending",
+    priority: "medium",
+    progress: 0,
+    tags: "",
+    note: "",
+    startTime: "",
+    endTime: "",
+  })
+
+  // Thêm state cho task chi tiết
+  const [detailTask, setDetailTask] = useState(null)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
+
+  const { setTheme: setNextTheme, resolvedTheme } = useNextTheme()
 
   // Fetch task list with filters
   const fetchTasks = useCallback(async () => {
@@ -38,60 +104,9 @@ export default function TasksPage() {
     fetchTasks()
   }, [fetchTasks])
 
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
-
-  // Create or edit task
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!form.title) return alert('Title is required')
-    const method = editingTask ? 'PUT' : 'POST'
-    const body = editingTask
-      ? { ...editingTask, ...form }
-      : form
-    const res = await fetch('/api/tasks', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    if (res.ok) {
-      setForm({})
-      setEditingTask(null)
-      fetchTasks()
-    } else {
-      alert('Error saving task')
-    }
-  }
-
-  // Delete task
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this task?')) return
-    const res = await fetch('/api/tasks', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    })
-    if (res.ok) fetchTasks()
-    else alert('Error deleting task')
-  }
-
-  // Edit task
-  const handleEdit = (task) => {
-    setEditingTask(task)
-    setForm({
-      title: task.title,
-      description: task.description || '',
-      status: task.status,
-      priority: task.priority,
-      progress: task.progress,
-      dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
-      tags: task.tags ? task.tags.join(',') : '',
-      note: task.note || '',
-    })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  // Handle filter change
+  const handleFiltersChange = (name, value) => {
+    setFilters((prev) => ({ ...prev, [name]: value, page: 1 }))
   }
 
   // Pagination
@@ -99,192 +114,341 @@ export default function TasksPage() {
     setFilters((prev) => ({ ...prev, page: newPage }))
   }
 
-  // Handle filter change
-  const handleFiltersChange = (e) => {
-    const { name, value } = e.target
-    setFilters((prev) => ({ ...prev, [name]: value, page: 1 }))
+  // form handlers
+  const handleFormChange = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Reset form
-  const handleResetForm = () => {
-    setForm({})
-    setEditingTask(null)
+  // Create new task
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.title) return alert("Title is required")
+    const body = {
+      ...form,
+      tags: form.tags
+        ? form.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : [],
+      progress: Number(form.progress || 0),
+      startTime: form.startTime ? new Date(form.startTime) : undefined,
+      endTime: form.endTime ? new Date(form.endTime) : undefined,
+    }
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      setForm({
+        title: "",
+        description: "",
+        status: "pending",
+        priority: "medium",
+        progress: 0,
+        tags: "",
+        note: "",
+        startTime: "",
+        endTime: "",
+      })
+      setShowDialog(false)
+      fetchTasks()
+    } else {
+      alert("Error saving task")
+    }
   }
 
+  // Khi nhấn vào từng task trong bảng, hiển thị chi tiết
+  const handleRowClick = (task) => {
+    setDetailTask(task)
+    setShowDetailDialog(true)
+  }
+
+  const [editField, setEditField] = useState(null); // tên trường đang sửa, ví dụ "title"
+const [editValue, setEditValue] = useState("");   // giá trị đang sửa
+const [showDeleteDialog, setShowDeleteDialog] = useState(false); // popup xác nhận xóa
+
+const handleSaveEdit = async (field) => {
+  if (!editField || !detailTask) return;
+  const res = await fetch(`/api/tasks/${detailTask.id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ [field]: editValue }),
+  });
+  if (res.ok) {
+    const updated = await res.json();
+    setDetailTask(updated);
+    setEditField(null);
+    fetchTasks();
+  } else {
+    alert("Cập nhật thất bại!");
+  }
+};
+
+  // UI
   return (
-    <div className="max-w-4xl mx-auto px-2 py-8">
-      <h1 className="text-3xl font-bold mb-6">Task Manager</h1>
+    <div className="max-w-5xl mx-auto px-2 py-10 min-h-screen transition-colors">
+      {/* Header and theme toggle */}
+      <div className="flex items-center justify-between mb-8 gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setShowDialog(true)}>+ Add Task</Button>
+        </div>
+      </div>
 
       {/* Filter */}
-      <div className="mb-8 p-4 rounded bg-gray-100 border flex flex-wrap gap-4">
-        <input
+      <div className="mb-8 flex flex-wrap gap-4 bg-muted p-4 rounded-lg border">
+        <Input
           name="q"
           value={filters.q}
-          onChange={handleFiltersChange}
+          onChange={(e) => handleFiltersChange("q", e.target.value)}
           placeholder="Search..."
-          className="px-2 py-1 rounded border"
+          className="w-80"
         />
-        <select name="status" value={filters.status} onChange={handleFiltersChange} className="px-2 py-1 rounded border">
-          <option value="">All status</option>
-          {statusOptions.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <select name="priority" value={filters.priority} onChange={handleFiltersChange} className="px-2 py-1 rounded border">
-          <option value="">All priority</option>
-          {priorityOptions.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-        <input
+        <Select
+          value={filters.status}
+          onValueChange={(v) => handleFiltersChange("status", v)}
+        >
+          <SelectTrigger className="w-36">
+            {
+              statusFilterOptions.find(opt => opt.value === filters.status)?.label || "All status"
+            }
+          </SelectTrigger>
+          <SelectContent>
+            {statusFilterOptions.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.priority}
+          onValueChange={(v) => handleFiltersChange("priority", v)}
+        >
+          <SelectTrigger className="w-36">
+            {
+              priorityFilterOptions.find(opt => opt.value === filters.priority)?.label || "All priority"
+            }
+          </SelectTrigger>
+          <SelectContent>
+            {priorityFilterOptions.map((p) => (
+              <SelectItem key={p.value} value={p.value}>
+                {p.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
           name="tags"
           value={filters.tags}
-          onChange={handleFiltersChange}
+          onChange={(e) => handleFiltersChange("tags", e.target.value)}
           placeholder="Tags (comma separated)"
-          className="px-2 py-1 rounded border"
+          className="w-48"
         />
-        <button className="ml-auto px-3 py-1 text-sm rounded bg-blue-600 text-white" onClick={fetchTasks} type="button">
+<div className="flex items-center gap-2">
+  <span className="font-semibold">Start:</span>
+  <Input
+    name="startFrom"
+    type="date"
+    value={filters.startFrom}
+    onChange={e => handleFiltersChange("startFrom", e.target.value)}
+    className="w-40"
+  />
+</div>
+<div className="flex items-center gap-2">
+  <span className="font-semibold">End:</span>
+  <Input
+    name="endTo"
+    type="date"
+    value={filters.endTo}
+    onChange={e => handleFiltersChange("endTo", e.target.value)}
+    className="w-40"
+  />
+</div>
+        <Button variant="secondary" className='cursor-pointer' onClick={fetchTasks} type="button">
           Filter
-        </button>
+        </Button>
       </div>
-
-      {/* Task Form */}
-      <form onSubmit={handleSubmit} className="mb-8 p-4 bg-white rounded border shadow flex flex-col gap-2">
-        <h2 className="text-xl font-semibold mb-2">{editingTask ? 'Edit Task' : 'New Task'}</h2>
-        <div className="flex flex-col md:flex-row gap-2">
-          <input
-            name="title"
-            value={form.title || ''}
-            onChange={handleChange}
-            placeholder="Title"
-            required
-            className="flex-1 px-2 py-1 rounded border"
-          />
-          <select name="status" value={form.status || 'pending'} onChange={handleChange} className="px-2 py-1 rounded border">
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <select name="priority" value={form.priority || 'medium'} onChange={handleChange} className="px-2 py-1 rounded border">
-            {priorityOptions.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-        <textarea
-          name="description"
-          value={form.description || ''}
-          onChange={handleChange}
-          placeholder="Description"
-          className="px-2 py-1 rounded border"
-        />
-        <input
-          name="progress"
-          type="number"
-          min={0}
-          max={100}
-          value={form.progress || 0}
-          onChange={handleChange}
-          placeholder="Progress (%)"
-          className="px-2 py-1 rounded border"
-        />
-        <input
-          name="dueDate"
-          type="date"
-          value={form.dueDate || ''}
-          onChange={handleChange}
-          className="px-2 py-1 rounded border"
-        />
-        <input
-          name="tags"
-          value={form.tags || ''}
-          onChange={handleChange}
-          placeholder="Tags (comma separated)"
-          className="px-2 py-1 rounded border"
-        />
-        <input
-          name="note"
-          value={form.note || ''}
-          onChange={handleChange}
-          placeholder="Note"
-          className="px-2 py-1 rounded border"
-        />
-        <div className="flex gap-2 mt-2">
-          <button type="submit" className="px-4 py-2 rounded bg-green-600 text-white">
-            {editingTask ? 'Update' : 'Create'}
-          </button>
-          {editingTask && (
-            <button type="button" className="px-4 py-2 rounded bg-gray-400 text-white" onClick={handleResetForm}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
 
       {/* Task List */}
-      <div className="bg-white rounded shadow border overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2 text-left">Title</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Priority</th>
-              <th className="p-2">Progress</th>
-              <th className="p-2">Tags</th>
-              <th className="p-2">Due</th>
-              <th className="p-2">Note</th>
-              <th className="p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="rounded-lg border shadow bg-card overflow-x-auto">
+        <Table>
+          <TableHeader>
+  <TableRow>
+    <TableHead className="w-[250px] pl-4">Title</TableHead>
+    <TableHead className="w-[100px] pl-4">Status</TableHead>
+    <TableHead className="w-[100px] pl-4">Priority</TableHead>
+    <TableHead className="w-[120px]">Progress</TableHead>
+    <TableHead className="w-[180px]">Tags</TableHead>
+    <TableHead className="w-[180px]">Start</TableHead>
+    <TableHead className="w-[180px]">End</TableHead>
+  </TableRow>
+</TableHeader>
+          <TableBody>
             {loading ? (
-              <tr>
-                <td colSpan={8} className="text-center py-8">Loading...</td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8">
+                  Loading...
+                </TableCell>
+              </TableRow>
             ) : tasks.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-8">No tasks found</td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-8">
+                  No tasks found
+                </TableCell>
+              </TableRow>
             ) : (
               tasks.map((task) => (
-                <tr key={task.id} className="border-t">
-                  <td className="p-2 font-medium">{task.title}</td>
-                  <td className="p-2">{task.status}</td>
-                  <td className="p-2">{task.priority}</td>
-                  <td className="p-2">{task.progress}%</td>
-                  <td className="p-2">{task.tags && task.tags.join(', ')}</td>
-                  <td className="p-2">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : ''}</td>
-                  <td className="p-2">{task.note}</td>
-                  <td className="p-2 flex gap-2">
-                    <button className="px-2 py-1 rounded bg-yellow-500 text-white" onClick={() => handleEdit(task)}>
-                      Edit
-                    </button>
-                    <button className="px-2 py-1 rounded bg-red-600 text-white" onClick={() => handleDelete(task.id)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                <TableRow
+                  key={task.id}
+                  className="border-t cursor-pointer hover:bg-accent/40"
+                  onClick={() => handleRowClick(task)}
+                >
+                  <TableCell className="font-medium pl-4">{task.title}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        "text-xs px-2 py-1 rounded-full " +
+                        (statusColors[task.status] || "")
+                      }
+                    >
+                      {task.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        "text-xs px-2 py-1 rounded-full " +
+                        (priorityColors[task.priority] || "")
+                      }
+                    >
+                      {task.priority}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={
+                        "text-xs px-2 py-1 rounded-full min-w-[2rem] " +
+                        (task.progress >= 100
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800")
+                      }
+                    >
+                      {task.progress}%
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{task.tags && task.tags.join(", ")}</TableCell>
+                  <TableCell>
+                    {task.startTime ? new Date(task.startTime).toLocaleString() : ""}
+                  </TableCell>
+                  <TableCell>
+                    {task.endTime ? new Date(task.endTime).toLocaleString() : ""}
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
+
       {/* Pagination */}
       <div className="flex gap-2 mt-4 justify-end items-center">
         <span>
-          Page {filters.page} / {Math.ceil(total / filters.pageSize)}
+          Page {filters.page} / {Math.max(1, Math.ceil(total / filters.pageSize))}
         </span>
-        <button
+        <Button
+          variant="outline"
           disabled={filters.page <= 1}
-          className="px-2 py-1 rounded bg-gray-300"
           onClick={() => handlePageChange(filters.page - 1)}
-        >Prev</button>
-        <button
+        >
+          Prev
+        </Button>
+        <Button
+          variant="outline"
           disabled={filters.page >= Math.ceil(total / filters.pageSize)}
-          className="px-2 py-1 rounded bg-gray-300"
           onClick={() => handlePageChange(filters.page + 1)}
-        >Next</button>
+        >
+          Next
+        </Button>
       </div>
+
+      {/* Add Task Dialog */}
+      <TaskAddDialog
+  open={showDialog}
+  onOpenChange={setShowDialog}
+  form={form}
+  handleFormChange={handleFormChange}
+  handleSubmit={handleSubmit}
+  statusOptions={statusOptions}
+  priorityOptions={priorityOptions}
+  setShowDialog={setShowDialog}
+/>
+
+      {/* Task Detail Dialog */}
+      <TaskDetailDialog
+  open={showDetailDialog}
+  onOpenChange={setShowDetailDialog}
+  detailTask={detailTask}
+  statusColors={statusColors}
+  priorityColors={priorityColors}
+  statusOptions={statusOptions}
+  priorityOptions={priorityOptions}
+  showDeleteDialog={showDeleteDialog}
+  setShowDeleteDialog={setShowDeleteDialog}
+  onUpdate={async (field, value) => {
+    // PATCH API
+    const res = await fetch(`/api/tasks/${detailTask._id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      setDetailTask(updated)
+      fetchTasks()
+    } else {
+      alert("Cập nhật thất bại!")
+    }
+  }}
+/>
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+  <DialogContent className="max-w-sm w-full">
+    <DialogHeader>
+      <DialogTitle>Xác nhận xóa Task</DialogTitle>
+    </DialogHeader>
+    <div>
+      Bạn có chắc chắn muốn xóa task này không?
+    </div>
+    <DialogFooter>
+      <Button
+        variant="destructive"
+        onClick={async () => {
+          if (!detailTask) return;
+          const res = await fetch(`/api/tasks/${detailTask.id}`, { method: "DELETE" });
+          if (res.ok) {
+            setShowDeleteDialog(false);
+            setShowDetailDialog(false);
+            setDetailTask(null);
+            fetchTasks();
+          } else {
+            alert("Xóa task thất bại!");
+          }
+        }}
+      >
+        Xóa
+      </Button>
+      <DialogClose asChild>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setShowDeleteDialog(false)}
+        >
+          Hủy
+        </Button>
+      </DialogClose>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </div>
   )
 }
