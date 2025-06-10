@@ -8,9 +8,11 @@ import './calendar-custom.css'
 export default function FullCalendar() {
   const [value, setValue] = useState(new Date())
   const [now, setNow] = useState(new Date())
+  const [hasMounted, setHasMounted] = useState(false)
 
   // Cập nhật đồng hồ theo thời gian thực (cứ mỗi giây)
   useEffect(() => {
+    setHasMounted(true)
     const interval = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(interval)
   }, [])
@@ -47,8 +49,14 @@ export default function FullCalendar() {
 
       {/* Ngày giờ bên phải */}
       <div className="flex-1 md:max-w-[68.5%] bg-card text-card-foreground p-6 rounded-lg shadow flex flex-col justify-center items-center text-center">
-        <h2 className="text-6xl font-bold mb-2">{formattedTime}</h2>
-        <p className="text-4xl text-muted-foreground">{formattedDate}</p>
+        {hasMounted ? (
+          <>
+            <h2 className="text-6xl font-bold mb-2">{formattedTime}</h2>
+            <p className="text-4xl text-muted-foreground">{formattedDate}</p>
+          </>
+        ) : (
+          <p className="text-xl text-muted">Đang tải thời gian...</p>
+        )}
       </div>
     </div>
   )

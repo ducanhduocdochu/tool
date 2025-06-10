@@ -8,10 +8,15 @@ datasource db {
 }
 
 model Task {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  description  String?
+  status       String    @default("pending")     // pending, in_progress, completed, canceled, ...
+  priority     String    @default("medium")      // low, medium, high, urgent
+  progress     Int       @default(0)             // 0-100 (%)
+  dueDate      DateTime?                         // deadline
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  tags         String[]                          // nhãn (labels)
+  note         String?                           // chỉ duy nhất 1 note cho task này
 }

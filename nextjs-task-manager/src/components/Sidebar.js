@@ -28,7 +28,7 @@ export default function Sidebar() {
   const itemHeight = 48
 
   return (
-    <aside className="w-64 h-screen bg-muted p-4 border-r dark:border-gray-700 dark:bg-gray-900">
+    <aside className="fixed left-0 top-0 w-64 h-screen bg-muted p-4 border-r dark:border-gray-700 dark:bg-gray-900">
       <div className="relative">
         {/* Thanh xanh chỉ mục */}
         {activeIndex !== -1 && (
