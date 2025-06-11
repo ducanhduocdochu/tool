@@ -82,7 +82,14 @@ export async function POST(request) {
   console.log(body)
   const { title, description, status, priority, progress, startTime, endTime, tags } = body
 
-  if (!title) return new Response(JSON.stringify({ error: 'Title required' }), { status: 400 })
+  if (!title) {
+    return new Response(JSON.stringify({ error: 'Title required' }), { status: 400 })
+  }
+
+  // Bắt buộc phải có startTime và endTime
+  if (!startTime || !endTime) {
+    return new Response(JSON.stringify({ error: 'Start time and end time are required' }), { status: 400 })
+  }
 
   const newTask = await prisma.task.create({
     data: {
@@ -91,8 +98,8 @@ export async function POST(request) {
       status,
       priority,
       progress,
-      startTime: startTime ? new Date(startTime) : undefined,
-      endTime: endTime ? new Date(endTime) : undefined,
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
       tags: Array.isArray(tags)
         ? tags
         : typeof tags === 'string'

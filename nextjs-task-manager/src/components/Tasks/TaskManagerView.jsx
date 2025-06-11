@@ -118,6 +118,7 @@ export default function TaskManagerView({
       setShowDialog(false)
       fetchTasks()
     } else {
+      setLoading(false)
       alert("Error saving task")
     }
   }
@@ -158,7 +159,7 @@ export default function TaskManagerView({
         <h1 className="text-3xl font-bold tracking-tight">Manager</h1>
         
         <div className="flex items-center gap-2">
-          <Button onClick={() => setShowDialog(true)}>+ Add Task</Button>
+          <Button className='cursor-pointer' onClick={() => setShowDialog(true)}>+ Add Task</Button>
         </div>
       </div>
 
@@ -169,20 +170,20 @@ export default function TaskManagerView({
           value={filters.q}
           onChange={(e) => handleFiltersChange("q", e.target.value)}
           placeholder="Search..."
-          className="w-80"
+          className="w-80 cursor-pointer"
         />
         <Select
           value={filters.status}
           onValueChange={(v) => handleFiltersChange("status", v)}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36 cursor-pointer">
             {
               statusFilterOptions.find(opt => opt.value === filters.status)?.label || "All status"
             }
           </SelectTrigger>
           <SelectContent>
             {statusFilterOptions.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
+              <SelectItem className='cursor-pointer' key={s.value} value={s.value}>
                 {s.label}
               </SelectItem>
             ))}
@@ -192,14 +193,14 @@ export default function TaskManagerView({
           value={filters.priority}
           onValueChange={(v) => handleFiltersChange("priority", v)}
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36 cursor-pointer">
             {
               priorityFilterOptions.find(opt => opt.value === filters.priority)?.label || "All priority"
             }
           </SelectTrigger>
           <SelectContent>
             {priorityFilterOptions.map((p) => (
-              <SelectItem key={p.value} value={p.value}>
+              <SelectItem className='cursor-pointer' key={p.value} value={p.value}>
                 {p.label}
               </SelectItem>
             ))}
@@ -210,7 +211,7 @@ export default function TaskManagerView({
           value={filters.tags}
           onChange={(e) => handleFiltersChange("tags", e.target.value)}
           placeholder="Tags (comma separated)"
-          className="w-48"
+          className="w-48 cursor-pointer"
         />
         <div className="flex items-center gap-2">
           <span className="font-semibold">Start:</span>
@@ -219,7 +220,7 @@ export default function TaskManagerView({
             type="date"
             value={filters.startFrom}
             onChange={e => handleFiltersChange("startFrom", e.target.value)}
-            className="w-40"
+            className="w-40 cursor-pointer"
           />
         </div>
         <div className="flex items-center gap-2">

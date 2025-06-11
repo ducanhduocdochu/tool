@@ -86,7 +86,12 @@ export default function TasksPage() {
         />
       </div>
       <div className={activeTab === "schedule" ? "block" : "hidden"}>
-        <ScheduleView />
+        <ScheduleView statusColors={statusColors}
+          priorityColors={priorityColors}
+          statusFilterOptions={statusFilterOptions}
+          priorityFilterOptions={priorityFilterOptions}
+          statusOptions={statusOptions}
+          priorityOptions={priorityOptions} />
       </div>
       <div className={activeTab === "dashboard" ? "block" : "hidden"}>
         <div className="text-center text-gray-500 py-20">Dashboard đang phát triển...</div>

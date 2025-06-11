@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Pencil } from "lucide-react"
+import TenMinuteDatetimePicker from "../ui/pickerdate"
 
 export default function TaskDetailDialog({
   open,
@@ -20,6 +21,7 @@ export default function TaskDetailDialog({
   setShowDeleteDialog,
   onUpdate,
   handleClone,
+  isClone = true
 }) {
   // State cho edit
   const [editField, setEditField] = useState(null)
@@ -101,15 +103,14 @@ export default function TaskDetailDialog({
           placeholder="Tags (comma separated)"
         />
       )
-    if (field === "startTime" || field === "endTime")
-      return (
-        <Input
-          type="datetime-local"
-          value={editValue}
-          onChange={e => setEditValue(e.target.value)}
-          className="w-80"
-        />
-      )
+   if (field === "startTime" || field === "endTime")
+  return (
+    <TenMinuteDatetimePicker
+      value={editValue}
+      onChange={v => setEditValue(v)}
+      className="w-80"
+    />
+  )
     // title, description mặc định
     return (
       <Input value={editValue} onChange={e => setEditValue(e.target.value)} className="w-full" />
@@ -138,7 +139,9 @@ const handleUpdate = async () => {
   let value = editValue
   if (editField === "progress") value = Number(value)
   if (editField === "tags") value = value.split(",").map(t => t.trim()).filter(Boolean)
-  if (editField === "startTime" || editField === "endTime") value = value ? new Date(value) : undefined
+  if (editField === "startTime" || editField === "endTime") {
+  value = value ? new Date(value.replace("T", " ") + ":00") : undefined
+}
   setIsLoading(true)
   try {
     await onUpdate(editField, value)
@@ -399,13 +402,14 @@ const handleUpdate = async () => {
   </div>
 )}
           <DialogFooter>
-            <Button
+            {isClone &&             <Button
   className="cursor-pointer"
   variant="outline"
   onClick={handleSubmitClone}
 >
   Clone
-</Button>
+</Button>}
+
             <Button
               className='cursor-pointer'
               variant="destructive"
