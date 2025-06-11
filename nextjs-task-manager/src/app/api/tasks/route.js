@@ -79,6 +79,7 @@ export async function GET(request) {
 // POST: Tạo task mới
 export async function POST(request) {
   const body = await request.json()
+  console.log(body)
   const { title, description, status, priority, progress, startTime, endTime, tags } = body
 
   if (!title) return new Response(JSON.stringify({ error: 'Title required' }), { status: 400 })
@@ -129,6 +130,7 @@ export async function PUT(request) {
 
 // DELETE: Xóa task
 export async function DELETE(request) {
+  console.log('a')
   const body = await request.json()
   const { id } = body
   if (!id) return new Response(JSON.stringify({ error: 'Task ID required' }), { status: 400 })

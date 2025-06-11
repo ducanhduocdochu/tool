@@ -19,18 +19,47 @@ export default function TaskDetailDialog({
   showDeleteDialog,
   setShowDeleteDialog,
   onUpdate,
+  handleClone,
 }) {
   // State cho edit
   const [editField, setEditField] = useState(null)
   const [editValue, setEditValue] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  const formatter = new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+  })
+
+  const handleSubmitClone = async () => {
+  setIsLoading(true)
+  try {
+    const cloned = {
+      ...detailTask,
+      title: detailTask.title + " (Copy)",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    await handleClone(cloned)
+    onOpenChange(false)
+  } catch (error) {
+    console.error("Clone failed:", error)
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   // Helper render control  
   const renderEditControl = (field, value) => {
     if (field === "status")
       return (
         <Select value={editValue} onValueChange={v => setEditValue(v)}>
-          <SelectTrigger className="w-56" />
-          <SelectContent>
+          <SelectTrigger className="w-36 bg-white text-black dark:bg-[#2b2b2b] dark:text-white">
+            {
+              statusOptions.find(opt => opt.value === editValue)?.label || "Status"
+            }
+          </SelectTrigger>
+          <SelectContent >
             {statusOptions.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
             ))}
@@ -40,7 +69,11 @@ export default function TaskDetailDialog({
     if (field === "priority")
       return (
         <Select value={editValue} onValueChange={v => setEditValue(v)}>
-          <SelectTrigger className="w-56" />
+          <SelectTrigger className="w-56 bg-white text-black dark:bg-[#2b2b2b] dark:text-white">
+            {
+              priorityOptions.find(opt => opt.value === editValue)?.label || "Priority"
+            }
+          </SelectTrigger>
           <SelectContent>
             {priorityOptions.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -100,15 +133,20 @@ export default function TaskDetailDialog({
   }
 
   // Update
-  const handleUpdate = () => {
-    if (!editField) return
-    let value = editValue
-    if (editField === "progress") value = Number(value)
-    if (editField === "tags") value = value.split(",").map(t => t.trim()).filter(Boolean)
-    if (editField === "startTime" || editField === "endTime") value = value ? new Date(value) : undefined
-    onUpdate(editField, value)
+const handleUpdate = async () => {
+  if (!editField) return
+  let value = editValue
+  if (editField === "progress") value = Number(value)
+  if (editField === "tags") value = value.split(",").map(t => t.trim()).filter(Boolean)
+  if (editField === "startTime" || editField === "endTime") value = value ? new Date(value) : undefined
+  setIsLoading(true)
+  try {
+    await onUpdate(editField, value)
     setEditField(null)
+  } finally {
+    setIsLoading(false)
   }
+}
 
   // Cancel
   const handleCancel = () => {
@@ -120,8 +158,8 @@ export default function TaskDetailDialog({
   const renderTags = tags =>
     tags && tags.length > 0
       ? tags.map(tag => (
-          <Badge key={tag} className="mr-2 px-2 py-1 bg-blue-100 text-blue-700">{tag}</Badge>
-        ))
+        <Badge key={tag} className="mr-2 px-2 py-1 bg-blue-100 text-blue-700">{tag}</Badge>
+      ))
       : <span className="italic text-muted-foreground">No tags</span>
 
   return (
@@ -298,7 +336,7 @@ export default function TaskDetailDialog({
                     : (
                       <>
                         <span>
-                          {detailTask.startTime ? new Date(detailTask.startTime).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
+                          {detailTask.startTime ? formatter.format(new Date(detailTask.startTime)) : <span className="italic text-muted-foreground">N/A</span>}
                         </span>
                         <Button size="icon" variant="ghost" className="ml-2 cursor-pointer" onClick={() => startEdit("startTime", detailTask.startTime)}>
                           <Pencil className="w-5 h-5" />
@@ -323,7 +361,7 @@ export default function TaskDetailDialog({
                     : (
                       <>
                         <span>
-                          {detailTask.endTime ? new Date(detailTask.endTime).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
+                          {detailTask.startTime ? formatter.format(new Date(detailTask.endTime)) : <span className="italic text-muted-foreground">N/A</span>}
                         </span>
                         <Button size="icon" variant="ghost" className="ml-2 cursor-pointer" onClick={() => startEdit("endTime", detailTask.endTime)}>
                           <Pencil className="w-5 h-5" />
@@ -338,7 +376,8 @@ export default function TaskDetailDialog({
                 <span className="font-semibold text-xl min-w-[130px]">Created At:</span>
                 <div className="flex-1 flex items-center">
                   <span>
-                    {detailTask.createdAt ? new Date(detailTask.createdAt).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
+                    {detailTask.endTime ? new Date(detailTask.createdAt).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
+
                   </span>
                 </div>
               </div>
@@ -347,21 +386,42 @@ export default function TaskDetailDialog({
                 <span className="font-semibold text-xl min-w-[130px]">Updated At:</span>
                 <div className="flex-1 flex items-center">
                   <span>
-                    {detailTask.updatedAt ? new Date(detailTask.updatedAt).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
+                    {detailTask.createdAt ? new Date(detailTask.updatedAt).toLocaleString() : <span className="italic text-muted-foreground">N/A</span>}
                   </span>
                 </div>
               </div>
             </div>
           )}
+
+          {isLoading && (
+  <div className="absolute inset-0 bg-black/30 z-50 flex items-center justify-center">
+    <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+  </div>
+)}
           <DialogFooter>
+            <Button
+  className="cursor-pointer"
+  variant="outline"
+  onClick={handleSubmitClone}
+>
+  Clone
+</Button>
             <Button
               className='cursor-pointer'
               variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
+              onClick={async () => {
+  setIsLoading(true)
+  try {
+    await setShowDeleteDialog(true)
+  } finally {
+    setIsLoading(false)
+  }
+}}
             >
               Xóa
             </Button>
             <DialogClose asChild>
+              
               <Button className='cursor-pointer' variant="secondary" type="button">
                 Đóng
               </Button>

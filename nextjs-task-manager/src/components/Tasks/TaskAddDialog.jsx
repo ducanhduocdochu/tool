@@ -1,9 +1,21 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
 
 export default function TaskAddDialog({
   open,
@@ -13,16 +25,21 @@ export default function TaskAddDialog({
   handleSubmit,
   statusOptions,
   priorityOptions,
-  setShowDialog
+  setShowDialog,
+  loading
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-6xl min-w-[1200px] h-[700px] rounded-2xl border-0 dark:bg-[#24262b] bg-gradient-to-br from-[#eaeaea] via-[#f5f5f7] to-[#e6e9ef] shadow-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-y-auto"
+        className="max-w-6xl min-w-[1200px] h-[700px] rounded-2xl border-0 
+        bg-white text-black 
+        dark:bg-[#24262b] dark:text-white 
+        shadow-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 overflow-y-auto"
       >
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold">Add Task</DialogTitle>
         </DialogHeader>
+
         <form
           className="flex flex-col mx-12 gap-8 py-6 h-[500px] justify-center"
           onSubmit={handleSubmit}
@@ -37,9 +54,10 @@ export default function TaskAddDialog({
               onChange={e => handleFormChange("title", e.target.value)}
               placeholder="Task title"
               required
-              className="flex-1"
+              className="flex-1 bg-white dark:bg-white text-black dark:text-black"
             />
           </div>
+
           {/* Description */}
           <div className="flex items-center gap-4">
             <span className="font-semibold text-xl min-w-[130px]">Description:</span>
@@ -48,9 +66,10 @@ export default function TaskAddDialog({
               value={form.description}
               onChange={e => handleFormChange("description", e.target.value)}
               placeholder="Description"
-              className="flex-1"
+              className="flex-1 bg-white dark:bg-white text-black dark:text-black"
             />
           </div>
+
           {/* Progress */}
           <div className="flex items-center gap-4">
             <span className="font-semibold text-xl min-w-[130px]">Progress:</span>
@@ -64,19 +83,21 @@ export default function TaskAddDialog({
                 onChange={e => handleFormChange("progress", e.target.value)}
                 className="w-96 accent-blue-600"
               />
-              <span className="mx-3 w-12 text-lg text-blue-700">{form.progress}%</span>
+              <span className="mx-3 w-12 text-lg text-blue-700 dark:text-white">
+                {form.progress}%
+              </span>
             </div>
           </div>
+
           {/* Status, Priority, Tags */}
-          <div className="flex items-center gap-10">
             {/* Status */}
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-xl">Status:</span>
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-xl min-w-[130px]">Status:</span>
               <Select
                 value={form.status}
                 onValueChange={v => handleFormChange("status", v)}
               >
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-36 bg-white dark:bg-white text-black dark:text-black">
                   {form.status
                     ? statusOptions.find(opt => opt.value === form.status)?.label
                     : "Status"}
@@ -90,14 +111,15 @@ export default function TaskAddDialog({
                 </SelectContent>
               </Select>
             </div>
+
             {/* Priority */}
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-xl">Priority:</span>
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-xl min-w-[130px]">Priority:</span>
               <Select
                 value={form.priority}
                 onValueChange={v => handleFormChange("priority", v)}
               >
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-36 bg-white dark:bg-white text-black dark:text-black">
                   {form.priority
                     ? priorityOptions.find(opt => opt.value === form.priority)?.label
                     : "Priority"}
@@ -111,18 +133,19 @@ export default function TaskAddDialog({
                 </SelectContent>
               </Select>
             </div>
+
             {/* Tags */}
-            <div className="flex items-center gap-2 flex-1">
-              <span className="font-semibold text-xl">Tags:</span>
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-xl min-w-[130px]">Tags:</span>
               <Input
                 name="tags"
                 value={form.tags}
                 onChange={e => handleFormChange("tags", e.target.value)}
                 placeholder="Tags (comma separated)"
-                className="flex-1"
+                className="flex-1 bg-white dark:bg-white text-black dark:text-black"
               />
             </div>
-          </div>
+
           {/* StartTime */}
           <div className="flex items-center gap-4">
             <span className="font-semibold text-xl min-w-[130px]">Start:</span>
@@ -132,9 +155,10 @@ export default function TaskAddDialog({
               value={form.startTime}
               onChange={e => handleFormChange("startTime", e.target.value)}
               placeholder="Start time"
-              className="w-80"
+              className="w-80 bg-white dark:bg-white text-black dark:text-black"
             />
           </div>
+
           {/* EndTime */}
           <div className="flex items-center gap-4">
             <span className="font-semibold text-xl min-w-[130px]">End:</span>
@@ -144,11 +168,32 @@ export default function TaskAddDialog({
               value={form.endTime}
               onChange={e => handleFormChange("endTime", e.target.value)}
               placeholder="End time"
-              className="w-80"
+              className="w-80 bg-white dark:bg-white text-black dark:text-black"
             />
           </div>
+
+          {/* Footer */}
           <DialogFooter>
-            <Button type="submit" className="font-bold shadow">Create</Button>
+            <Button type="submit" className="font-bold shadow" disabled={loading}>
+  {loading ? (
+    <span className="flex items-center gap-2">
+      <svg
+        className="animate-spin h-4 w-4 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle className="opacity-25" cx="12" cy="12" r="10"
+                stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 00-8 8h4z" />
+      </svg>
+      Creating...
+    </span>
+  ) : (
+    "Create"
+  )}
+</Button>
             <DialogClose asChild>
               <Button
                 type="button"
