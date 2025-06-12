@@ -11,7 +11,7 @@ export async function POST(req) {
       return Response.json({ message: "Email and password required" }, { status: 400 })
     }
 
-    const user = await prisma.auth.findUnique({ where: { email } })
+    const user = await prisma.auth.findFirst({ where: { email } })
     if (!user) {
       return Response.json({ message: "User not found" }, { status: 404 })
     }

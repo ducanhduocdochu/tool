@@ -39,21 +39,29 @@ model Account {
 }
 
 model Transaction {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  description String     // mô tả từ người dùng: "mua sữa 40000 từ cash"
-  amount      Int        // số tiền (âm = chi, dương = thu)
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  description String           // mô tả user
+  amount      Int              // âm = chi, dương = thu
   type        TransactionType
-  timestamp   DateTime   @default(now())
-  account     Account    @relation(fields: [accountId], references: [id])
+  timestamp   DateTime         @default(now())
+  account     Account          @relation(fields: [accountId], references: [id])
   accountId   String
+
+  keyword     ActionKeyword?   @relation(fields: [keywordId], references: [id])
+  keywordId   String?          @db.ObjectId
+
+  @@index([keywordId])         // optional: index cho tìm theo keyword
 }
 
 model ActionKeyword {
   id        String           @id @default(auto()) @map("_id") @db.ObjectId
-  phrase    String           // cụm từ như "mua", "lương", "nạp tiền"
-  type      TransactionType // phân loại thuộc về thu nhập hay chi tiêu
+  phrase    String
+  type      TransactionType
   createdAt DateTime         @default(now())
+
+  transactions Transaction[]
 }
+
 
 enum TransactionType {
   income

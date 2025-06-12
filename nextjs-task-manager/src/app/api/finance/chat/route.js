@@ -99,55 +99,103 @@ const actionNotFoundReplies = (phrase) => [
   `💣 Nhập như "${phrase}" là muốn tao nổ tung luôn đấy à? Đừng vậy chứ!`
 ]
 
-function getRandomActionNotFound(phrase) {
-  const replies = actionNotFoundReplies(phrase)
-  return replies[Math.floor(Math.random() * replies.length)]
-}
-
+const successReplies = {
+  expense: [
+    "🥀 Ủa mày xài mạnh quá, tao đã trừ {amount} VND khỏi {account} rồi đấy.",
+    "💸 Bố mày trừ {amount} VND ở {account}, đừng tiêu hoang thế chứ!",
+    "🛒 Mày vừa shopping à? -{amount} VND khỏi {account} rồi nhé.",
+    "🌪️ Tiền mày bay biến mất: -{amount} VND ở {account}.",
+    "🍔 Bữa ăn xịn quá, tao trừ {amount} VND khỏi {account}.",
+    "🎯 Giao dịch thành công: -{amount} VND (tài khoản {account}), mày note lại đi.",
+    "📉 Số dư {account} giảm {amount} VND, mày biết chưa?",
+    "🚀 Tiền mày cất cánh: -{amount} VND khỏi {account}.",
+    "🍕 Mày ăn pizza ngon không? -{amount} VND ở {account} rồi.",
+    "🔌 Điện thoại, mì gói… bố mày trừ {amount} VND ở {account}.",
+    "🍵 Ly trà sữa thần thánh: trừ {amount} VND khỏi {account}.",
+    "💼 Chi tiêu rồi: -{amount} VND (tài khoản {account}), mày kiểm tra đi.",
+    "🏪 Mua sắm tẹt ga: -{amount} VND tại {account}.",
+    "🔥 Đã thiêu rụi {amount} VND khỏi {account}, mẹ con vui vẻ chưa?",
+    "🎉 Giao dịch thành công: -{amount} VND ở {account}.",
+    "🥤 Trà sữa gọi tên mày: -{amount} VND khỏi {account}.",
+    "🛍️ Mày rinh đồ mới xong, -{amount} VND ở {account}.",
+    "💣 Tiêu tiền không phanh: -{amount} VND tại {account}.",
+    "🧾 Hóa đơn đã xong: -{amount} VND ({account}), mày đừng quên.",
+    "🚗 Đổ xăng cho xe: -{amount} VND ở {account}.",
+  ],
+  income: [
+    "💰 Mày vừa hốt về +{amount} VND vào {account}, tao ghi rồi nhé.",
+    "🎁 Bố mày gửi lộc: +{amount} VND vào {account}, mày vui chưa?",
+    "🏦 Mẹ con thêm tiền: +{amount} VND ở {account}.",
+    "🚀 Số dư {account} tăng vùn vụt: +{amount} VND.",
+    "💸 Mày nhận được +{amount} VND, tài khoản {account} khỏe re!",
+    "🌱 Tiền đẻ ra tiền: +{amount} VND cho {account}, mày hóng chưa?",
+    "🎉 Thu nhập mới: +{amount} VND ở {account}, mày ăn mừng đi.",
+    "🏆 Thành quả lao động: +{amount} VND vào {account}, mày hạnh phúc nhé.",
+    "📈 Số dư nhảy vọt: +{amount} VND tại {account}.",
+    "🤑 Ví mẹ con dày thêm: +{amount} VND rồi kìa.",
+    "🎊 Cộng +{amount} VND – {account} rộn ràng luôn!",
+    "💎 Found money: +{amount} VND ở {account}, mày số hưởng.",
+    "🌟 Khoản thu mới: +{amount} VND cho {account}.",
+    "📦 Đã nhận +{amount} VND, mày check lẹ đi.",
+    "🏖️ Lương về: +{amount} VND ở {account}, mày nghỉ ngơi thôi.",
+    "🔔 Thông báo: +{amount} VND đã vào {account}.",
+    "🍀 Mẹ con gửi “tiền may mắn”: +{amount} VND cho {account}.",
+    "🔑 Mở khóa +{amount} VND trong {account}.",
+    "🏝️ “Du lịch” túi tiền: +{amount} VND vào {account}.",
+    "💵 Đã cộng +{amount} VND – bố mày không tin nổi! 📰",
+  ]
+};
 
 export async function POST(req) {
-  const { message } = await req.json()
+  const { message } = await req.json();
 
   // Lưu tin nhắn user
   await prisma.chatLog.create({
-    data: {
-      sender: "user",
-      message,
-    },
-  })
+    data: { sender: "user", message },
+  });
+
+  // Hàm lấy random reply từ mảng
+  const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
   try {
     // Regex tách tin: tên tài khoản, keyword, số tiền
-    const regex = /^(\w+)\s+(.+)\s+([\d.,]+)(k|tr)?$/i
-    const match = message.trim().match(regex)
+    const regex = /^(\w+)\s+(.+)\s+([\d.,]+)(k|tr)?$/i;
+    const match = message.trim().match(regex);
 
     if (!match) {
-      throw new Error(invalidFormatRepliesByTime.getRandom())
+      // invalid format → random từ invalidFormatRepliesByTime
+      throw new Error(invalidFormatRepliesByTime.getRandom());
     }
 
-    const [, accountName, phrase, rawAmount, unit] = match
-    const normalizedUnit = unit?.toLowerCase()
-const amountNumber = parseFloat(rawAmount.replace(",", ".")) *
-  (normalizedUnit === "tr" ? 1_000_000 : normalizedUnit === "k" ? 1_000 : 1)
+    const [, accountName, phrase, rawAmount, unit] = match;
+    const normalizedUnit = unit?.toLowerCase();
+    const amountNumber =
+      parseFloat(rawAmount.replace(",", ".")) *
+      (normalizedUnit === "tr" ? 1_000_000 : normalizedUnit === "k" ? 1_000 : 1);
 
     // Tìm account
     const account = await prisma.account.findFirst({
-        where: {
-            name: {
-            equals: accountName,
-            mode: "insensitive" 
-            }
-        }
-    })
-    if (!account) throw new Error(getRandomActionNotFound(accountNotFoundReplies(accountName)))
+      where: {
+        name: { equals: accountName, mode: "insensitive" },
+      },
+    });
+    if (!account) {
+      // account not found → random từ accountNotFoundReplies(accountName)
+      const reps = accountNotFoundReplies(accountName);
+      throw new Error(getRandom(reps));
+    }
 
     // Tìm keyword
     const keyword = await prisma.actionKeyword.findFirst({
       where: { phrase: { contains: phrase, mode: "insensitive" } },
-    })
-    if (!keyword) throw new Error(getRandomActionNotFound(actionNotFoundReplies))
+    });
+    if (!keyword) {
+      // action not found → random từ actionNotFoundReplies(phrase)
+      const reps = actionNotFoundReplies(phrase);
+      throw new Error(getRandom(reps));
+    }
 
-    const signedAmount = keyword.type === "expense" ? -amountNumber : amountNumber
+    const signedAmount = keyword.type === "expense" ? -amountNumber : amountNumber;
 
     // Ghi Transaction
     await prisma.transaction.create({
@@ -156,35 +204,36 @@ const amountNumber = parseFloat(rawAmount.replace(",", ".")) *
         description: message,
         amount: signedAmount,
         type: keyword.type,
+        keywordId: keyword.id,
       },
-    })
+    });
 
     // Cập nhật số dư account
     await prisma.account.update({
       where: { id: account.id },
-      data: {
-        balance: account.balance + signedAmount,
-      },
-    })
+      data: { balance: account.balance + signedAmount },
+    });
 
-    const reply = `${keyword.type === "expense" ? "Đã trừ" : "Đã cộng"} ${Math.abs(signedAmount).toLocaleString()} VND vào tài khoản ${account.name}`
+    const template = getRandom(successReplies[keyword.type]);
+    const reply = template
+      .replace('{amount}', Math.abs(signedAmount).toLocaleString())
+      .replace('{account}', account.name);
+
+    const type = keyword.type
+    const value = signedAmount
 
     // Lưu tin nhắn bot
     await prisma.chatLog.create({
-      data: {
-        sender: "bot",
-        message: reply,
-      },
-    })
+      data: { sender: "bot", message: reply },
+    });
 
-    return Response.json({ reply })
+    return Response.json({ reply, type, value  });
   } catch (error) {
-    const errorReply = `${error.message}`
-    await prisma.chatLog.create({ data: { sender: "bot", message: errorReply } })
-    return Response.json({ reply: errorReply }, { status: 400 })
+    const errorReply = `${error.message}`;
+    await prisma.chatLog.create({ data: { sender: "bot", message: errorReply } });
+    return Response.json({ reply: errorReply }, { status: 400 });
   }
 }
-
 
 export async function GET() {
   const logs = await prisma.chatLog.findMany({

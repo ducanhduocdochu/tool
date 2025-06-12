@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Loader2 } from "lucide-react"
+import { CheckCircle, Loader2, Share2 } from "lucide-react"
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState([])
@@ -14,6 +14,8 @@ export default function ChatInterface() {
   const [botTyping, setBotTyping] = useState(false)
   const [typedBotText, setTypedBotText] = useState("")
   const [pendingBotReply, setPendingBotReply] = useState("")
+  const [pendingBotType, setPendingBotType] = useState(null)
+  const [pendingBotValue, setPendingBotValue] = useState(null)
   const endRef = useRef(null)
 
   useEffect(() => {
@@ -28,16 +30,27 @@ export default function ChatInterface() {
         index++
         if (index >= pendingBotReply.length) {
           clearInterval(interval)
-          setMessages(prev => [...prev, { from: "bot", text: pendingBotReply }])
+          // push the full bot message, including type & value
+          setMessages(prev => [
+            ...prev,
+            {
+              from: "bot",
+              text: pendingBotReply,
+              type: pendingBotType,
+              value: pendingBotValue,
+            }
+          ])
           setPendingBotReply("")
+          setPendingBotType(null)
+          setPendingBotValue(null)
           setTypedBotText("")
           setBotTyping(false)
         }
-      }, 30) // tốc độ gõ: càng nhỏ càng nhanh
+      }, 30)
 
       return () => clearInterval(interval)
     }
-  }, [pendingBotReply, botTyping])
+  }, [pendingBotReply, botTyping, pendingBotType, pendingBotValue])
 
   const fetchHistory = async () => {
     try {
@@ -71,6 +84,8 @@ export default function ChatInterface() {
       const data = await res.json()
       const reply = data.reply || "🤖 Không hiểu yêu cầu."
       setPendingBotReply(reply)
+      setPendingBotType(data.type)
+      setPendingBotValue(data.value)
       setBotTyping(true)
     } catch {
       setMessages(prev => [...prev, { from: "bot", text: "❌ Có lỗi xảy ra." }])
@@ -85,25 +100,61 @@ export default function ChatInterface() {
 
   return (
     <Card className="max-w-6xl w-full mx-auto p-4 h-[85vh] flex flex-col shadow-lg">
-      <ScrollArea className="flex-1 overflow-y-auto space-y-4 pr-2">
+      <ScrollArea className="flex-1 overflow-y-hidden space-y-4 pr-2">
         {messages.length === 0 && !loading && (
-          <div className="text-center text-gray-400 py-4">
-            Empty hihi
-          </div>
+          <div className="text-center text-gray-400 py-4">Empty hihi</div>
         )}
 
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"} mb-2`}
           >
-            <div
-              className={`rounded-lg px-4 py-2 text-sm max-w-[75%] whitespace-pre-wrap
-                ${msg.from === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"}`}
-            >
-              {msg.text}
+            <div>
+              <div
+                className={`rounded-lg px-4 py-2 text-sm max-w-[75%] whitespace-pre-wrap
+                  ${msg.from === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"}`}
+              >
+                {msg.text}
+              </div>
+
+              {/* Nếu bot và có type+value, hiển thị khung tiền */}
+{msg.from === "bot" && msg.type && typeof msg.value === "number" && (
+  <div className="mt-3">
+    <div
+      className={`
+        bg-gray-200 dark:bg-zinc-800 text-white rounded-2xl shadow-lg px-2 py-5 text-center
+        w-full max-w-sm
+      `}
+    >
+
+      {/* số tiền + dấu, dấu màu đỏ/xanh */}
+      <CheckCircle className="mx-auto mb-2 text-black dark:text-white w-8 h-8" />
+      <div className="text-3xl font-bold mb-3 flex items-baseline justify-center space-x-2">
+        <span
+          className={
+            msg.type === "expense"
+              ? "text-red-500"   // màu đỏ cho trừ
+              : "text-green-500" // màu xanh cho cộng
+          }
+        >
+          {msg.type === "expense" ? "−" : "+"}
+        </span>
+        <span className={
+            msg.type === "expense"
+              ? "text-red-500"   // màu đỏ cho trừ
+              : "text-green-500" // màu xanh cho cộng
+          }>
+          {new Intl.NumberFormat("vi-VN").format(Math.abs(msg.value))} VND
+        </span>
+      </div>
+    </div>
+  </div>
+)}
+
+
             </div>
           </div>
         ))}
@@ -129,7 +180,7 @@ export default function ChatInterface() {
           onKeyDown={handleKeyDown}
           disabled={loading || botTyping}
         />
-        <Button className="h-12 px-6 text-base" onClick={sendMessage} disabled={loading || botTyping}>
+        <Button className="h-12 px-6 text-base cursor-pointer" onClick={sendMessage} disabled={loading || botTyping}>
           {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Gửi"}
         </Button>
       </div>

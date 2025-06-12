@@ -120,3 +120,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Ẩn webkit-scrollbar */
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ẩn scrollbar Firefox */
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: none;
+}

@@ -1,32 +1,35 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import ChatInterface from "@/components/FinanceBot/ChatInterface"
-import LoginForm from "@/components/LoginForm"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import ChatInterface from "@/components/FinanceBot/ChatInterface";
+import LoginForm from "@/components/LoginForm";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import TransactionList from "@/components/FinanceBot/TransactionList"
-import KeywordList from "@/components/FinanceBot/KeywordList"
-import AccountList from "@/components/FinanceBot/AccountList"
+} from "@/components/ui/dialog";
+import TransactionList from "@/components/FinanceBot/TransactionList";
+import KeywordList from "@/components/FinanceBot/KeywordList";
+import AccountList from "@/components/FinanceBot/AccountList";
+import Dashboard from "@/components/FinanceBot/Dashboard";
 
 export default function ChatbotPage() {
-  const [authenticated, setAuthenticated] = useState(false)
-  
-    useEffect(() => {
-      fetch("/api/auth/check").then(res => res.json()).then(data => {
-        setAuthenticated(data.authenticated)
-      })
-    }, [])
-  
-    if (!authenticated) {
-    return <LoginForm onLogin={() => setAuthenticated(true)} />
-    }
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/check")
+      .then((res) => res.json())
+      .then((data) => {
+        setAuthenticated(data.authenticated);
+      });
+  }, []);
+
+  if (!authenticated) {
+    return <LoginForm onLogin={() => setAuthenticated(true)} />;
+  }
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
       <header className="flex justify-between items-center p-4 shadow bg-white dark:bg-zinc-900">
@@ -34,7 +37,9 @@ export default function ChatbotPage() {
         <div className="flex gap-2">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">📜 Transactions</Button>
+              <Button className="cursor-pointer" variant="outline" size="sm">
+                📜 Transactions
+              </Button>
             </DialogTrigger>
             <DialogContent className="!max-w-6xl !w-full">
               <DialogHeader>
@@ -46,7 +51,9 @@ export default function ChatbotPage() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">🧩 Keywords</Button>
+              <Button className="cursor-pointer" variant="outline" size="sm">
+                🧩 Keywords
+              </Button>
             </DialogTrigger>
             <DialogContent className="!max-w-6xl !w-full">
               <DialogHeader>
@@ -58,7 +65,27 @@ export default function ChatbotPage() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button className='mr-12' variant="outline" size="sm">💰 Accounts</Button>
+              <Button className="cursor-pointer" variant="outline" size="sm">
+                📊 Dashboard
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="!max-w-6xl !w-full">
+              <DialogHeader>
+                <DialogTitle>Dashboard</DialogTitle>
+              </DialogHeader>
+              <Dashboard />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                className="mr-12 cursor-pointer"
+                variant="outline"
+                size="sm"
+              >
+                💰 Accounts
+              </Button>
             </DialogTrigger>
             <DialogContent className="!max-w-6xl !w-full">
               <DialogHeader>
@@ -74,5 +101,5 @@ export default function ChatbotPage() {
         <ChatInterface />
       </main>
     </div>
-  )
+  );
 }
