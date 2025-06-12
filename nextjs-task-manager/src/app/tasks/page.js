@@ -12,6 +12,7 @@ import TaskDetailDialog from "@/components/Tasks/TaskDetailDialog"
 import TaskAddDialog from "@/components/Tasks/TaskAddDialog"
 import TaskManagerView from "@/components/Tasks/TaskManagerView"
 import ScheduleView from "@/components/Tasks/ScheduleView"
+import LoginForm from "@/components/LoginForm"
 
 const statusColors = {
   pending: "bg-yellow-400 text-yellow-900",
@@ -45,6 +46,18 @@ const priorityOptions = [...priorityFilterOptions]
 
 export default function TasksPage() {
   const [activeTab, setActiveTab] = useState("tasks")
+
+  const [authenticated, setAuthenticated] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/auth/check").then(res => res.json()).then(data => {
+      setAuthenticated(data.authenticated)
+    })
+  }, [])
+
+  if (!authenticated) {
+  return <LoginForm onLogin={() => setAuthenticated(true)} />
+}
 
   return (
     <div className="max-w-7xl mx-auto px-2 py-10 min-h-screen transition-colors">

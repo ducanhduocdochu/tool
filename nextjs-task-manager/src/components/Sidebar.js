@@ -8,7 +8,9 @@ import {
   CheckCircledIcon,
   PersonIcon,
   FileTextIcon,
-  EnvelopeOpenIcon
+  EnvelopeOpenIcon,
+  ChatBubbleIcon,
+  GearIcon
 } from '@radix-ui/react-icons'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
@@ -20,6 +22,16 @@ const menu = [
   { title: 'Account', path: '/account', icon: <PersonIcon className="w-4 h-4 mr-2" /> },
   { title: 'Note', path: '/note', icon: <FileTextIcon className="w-4 h-4 mr-2" /> },
   { title: 'Mail', path: '/mail', icon: <EnvelopeOpenIcon className="w-4 h-4 mr-2" /> },
+  {
+    title: 'FinanceBot',
+    path: '/finance-bot',
+    icon: <ChatBubbleIcon className="w-4 h-4 mr-2" />,
+  },
+  {
+    title: 'Setting',
+    path: '/setting',
+    icon: <GearIcon className="w-4 h-4 mr-2" />,
+  }
 ]
 
 export default function Sidebar() {
@@ -49,11 +61,10 @@ export default function Sidebar() {
                 <Link href={item.path}>
                   <Button
                     variant="ghost"
-                    className={`relative z-0 w-full justify-start h-full pl-4 pr-2 text-left transition-colors duration-200 ${
-                      isActive
+                    className={`relative z-0 w-full justify-start h-full pl-4 pr-2 text-left transition-colors duration-200 ${isActive
                         ? 'text-foreground font-semibold bg-white dark:bg-gray-800'
                         : 'text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
+                      }`}
                   >
                     {item.icon}
                     {item.title}

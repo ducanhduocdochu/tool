@@ -20,3 +20,54 @@ model Task {
   updatedAt    DateTime  @updatedAt
   tags         String[]                          // nhãn (labels)
 }
+
+model Auth {
+  id        String   @id @map("_id")
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  balance   Int        // số dư còn lại
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  description String     // mô tả từ người dùng: "mua sữa 40000 từ cash"
+  amount      Int        // số tiền (âm = chi, dương = thu)
+  type        TransactionType
+  timestamp   DateTime   @default(now())
+  account     Account    @relation(fields: [accountId], references: [id])
+  accountId   String
+}
+
+model ActionKeyword {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  phrase    String           // cụm từ như "mua", "lương", "nạp tiền"
+  type      TransactionType // phân loại thuộc về thu nhập hay chi tiêu
+  createdAt DateTime         @default(now())
+}
+
+enum TransactionType {
+  income
+  expense
+}
+
+model ChatLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  sender    Sender   // "user" hoặc "bot"
+  message   String   // nội dung tin nhắn
+  timestamp DateTime @default(now())
+}
+
+enum Sender {
+  user
+  bot
+}
