@@ -108,13 +108,13 @@ export default function ChatInterface() {
         {messages.map((msg, idx) => (
           <div
             key={idx}
-            className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"} mb-2`}
+            className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"} my-4`}
           >
             <div>
               <div
-                className={`rounded-lg px-4 py-2 text-sm max-w-[75%] whitespace-pre-wrap
+                className={`rounded-lg px-4 py-2 text-sm max-w-[100%] whitespace-pre-wrap
                   ${msg.from === "user"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-blue-600 text-white mr-2"
                     : "bg-gray-200 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"}`}
               >
                 {msg.text}

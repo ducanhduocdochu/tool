@@ -79,3 +79,39 @@ enum Sender {
   user
   bot
 }
+
+model Plan {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  status    PlanStatus @default(TODO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  data      PlanData[]
+}
+
+model PlanData {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  planId  String   @db.ObjectId
+  row     Int
+  column  Int
+  value   String
+
+  plan    Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, row, column])
+}
+
+enum PlanStatus {
+  TODO
+  COMPLETED
+}
+
+model Note {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  content   String
+  dueAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
