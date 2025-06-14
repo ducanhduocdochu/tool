@@ -130,3 +130,16 @@
 [data-radix-scroll-area-viewport] {
   scrollbar-width: none;
 }
+
+@keyframes blink {
+  0%, 100% {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+  50% {
+    background-color: rgba(255, 0, 0, 0.4);
+  }
+}
+
+.blinking-card {
+  animation: blink 1s infinite;
+}

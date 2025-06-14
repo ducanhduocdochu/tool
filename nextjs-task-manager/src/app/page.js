@@ -19,7 +19,7 @@ export default function Home() {
 
   useEffect(() => {
     const now = new Date()
-    const formatter = new Intl.DateTimeFormat('vi-VN', {
+    const formatter = new Intl.DateTimeFormat('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -33,7 +33,7 @@ export default function Home() {
       const { latitude, longitude } = position.coords
       try {
         const res = await fetch(
-          `https://api.weatherapi.com/v1/forecast.json?key=ec83afa14b1f470b8be33458251006&q=${latitude},${longitude}&days=7&lang=vi`
+          `https://api.weatherapi.com/v1/forecast.json?key=ec83afa14b1f470b8be33458251006&q=${latitude},${longitude}&days=7&lang=en`
         )
         const data = await res.json()
 
@@ -49,10 +49,10 @@ export default function Home() {
           })
           setForecast(data.forecast.forecastday)
         } else {
-          console.warn('WeatherAPI trả về lỗi:', data)
+          console.warn('WeatherAPI returned an error:', data)
         }
       } catch (error) {
-        console.error('Lỗi khi lấy thời tiết:', error)
+        console.error('Error fetching weather:', error)
       }
     })
   }, [])
@@ -61,7 +61,7 @@ export default function Home() {
     <section className="p-6 space-y-6 bg-background text-foreground">
       <div>
         <h1 className="text-2xl font-bold mb-6">
-          👋 Chào mừng trở lại, <span className="text-3xl text-green-600 dark:text-green-400">Đức Anh</span> !!!
+          👋 Welcome back, <span className="text-3xl text-green-600 dark:text-green-400">Duc Anh</span> !!!
         </h1>
 
         {weather && (
@@ -82,43 +82,42 @@ export default function Home() {
           </div>
         )}
         <FullCalendar />
-
       </div>
 
       <div className="bg-card rounded-lg p-4 border shadow-sm">
-        <h2 className="text-lg font-semibold mb-2">📈 Tiến độ hôm nay</h2>
+        <h2 className="text-lg font-semibold mb-2">📈 Today’s Progress</h2>
         <div className="w-full bg-muted rounded-full h-4 mb-2">
           <div className="bg-green-500 h-4 rounded-full" style={{ width: '65%' }}></div>
         </div>
-        <p className="text-sm text-muted-foreground">Hoàn thành 3 / 5 công việc</p>
+        <p className="text-sm text-muted-foreground">Completed 3 / 5 tasks</p>
       </div>
 
       <div className="bg-card rounded-lg p-4 border shadow-sm">
-        <h2 className="text-lg font-semibold mb-2">🕒 Lịch trình gần nhất</h2>
+        <h2 className="text-lg font-semibold mb-2">🕒 Upcoming Schedule</h2>
         <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-          <li>09:00 - Họp nhóm dự án A</li>
-          <li>14:00 - Viết bài Note cho Tool B</li>
-          <li>17:30 - Check email khách hàng</li>
+          <li>09:00 - Project A team meeting</li>
+          <li>14:00 - Write note for Tool B</li>
+          <li>17:30 - Check customer emails</li>
         </ul>
       </div>
 
       <div className="bg-card rounded-lg p-4 border shadow-sm">
-        <h2 className="text-lg font-semibold mb-2">📊 Thống kê nhanh</h2>
+        <h2 className="text-lg font-semibold mb-2">📊 Quick Stats</h2>
         <ul className="text-sm text-muted-foreground space-y-1">
-          <li>🔖 12 task trong tuần này</li>
-          <li>🗒 8 note được ghi</li>
-          <li>📬 35 email đã nhận</li>
+          <li>🔖 12 tasks this week</li>
+          <li>🗒 8 notes taken</li>
+          <li>📬 35 emails received</li>
         </ul>
       </div>
 
-      {/* Dự báo thời tiết 7 ngày */}
-            {forecast.length > 0 && (
+      {/* 7-Day Forecast */}
+      {forecast.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold mt-6 mb-2">Dự báo 7 ngày tới</h2>
+          <h2 className="text-xl font-semibold mt-6 mb-2">7-Day Forecast</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {forecast.map((day) => {
               const dateObj = new Date(day.date)
-              const formatter = new Intl.DateTimeFormat('vi-VN', {
+              const formatter = new Intl.DateTimeFormat('en-US', {
                 weekday: 'long',
                 day: '2-digit',
                 month: '2-digit',
@@ -151,18 +150,15 @@ export default function Home() {
         </div>
       )}
 
-
       {/* Dashboard */}
-      <h2 className="text-xl font-semibold mt-6 mb-2">Các chức năng chính</h2>
+      <h2 className="text-xl font-semibold mt-6 mb-2">Main Features</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card icon={<CheckCircledIcon className="w-5 h-5 text-green-500" />} title="Tasks" description="5 công việc đang làm" />
-        <Card icon={<FileTextIcon className="w-5 h-5 text-blue-500" />} title="Notes" description="3 ghi chú gần đây" />
-        <Card icon={<EnvelopeOpenIcon className="w-5 h-5 text-red-500" />} title="Mail" description="12 email chưa đọc" />
-        <Card icon={<PersonIcon className="w-5 h-5 text-purple-500" />} title="Accounts" description="8 tài khoản đang dùng" />
-        <Card icon={<BackpackIcon className="w-5 h-5 text-yellow-500" />} title="Portfolio" description="2 dự án đang hoạt động" />
+        <Card icon={<CheckCircledIcon className="w-5 h-5 text-green-500" />} title="Tasks" description="5 ongoing tasks" />
+        <Card icon={<FileTextIcon className="w-5 h-5 text-blue-500" />} title="Notes" description="3 recent notes" />
+        <Card icon={<EnvelopeOpenIcon className="w-5 h-5 text-red-500" />} title="Mail" description="12 unread emails" />
+        <Card icon={<PersonIcon className="w-5 h-5 text-purple-500" />} title="Accounts" description="8 active accounts" />
+        <Card icon={<BackpackIcon className="w-5 h-5 text-yellow-500" />} title="Portfolio" description="2 ongoing projects" />
       </div>
-
-
     </section>
   )
 }

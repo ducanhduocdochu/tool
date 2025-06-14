@@ -15,19 +15,34 @@ export async function GET() {
 
 export async function POST(req) {
   try {
-    const { action, id, title, content, dueAt } = await req.json();
-
-    if (action === 'delete') {
+    const { action, id, title, content, dueAt, warningHours, dangerHours } = await req.json();
+        if (action === 'delete') {
       await prisma.note.delete({ where: { id } });
       return Response.json({ message: 'Deleted' });
     }
+
+    // Validate required fields
+    if (!dueAt) {
+      return Response.json({ error: 'dueAt is required' }, { status: 400 });
+    }
+    if (warningHours === undefined || dangerHours === undefined) {
+      return Response.json({ error: 'warningHours and dangerHours are required' }, { status: 400 });
+    }
+
+    const dueDate = new Date(dueAt);
+    if (isNaN(dueDate.getTime())) {
+      return Response.json({ error: 'Invalid dueAt format' }, { status: 400 });
+    }
+
 
     if (action === 'create') {
       const note = await prisma.note.create({
         data: {
           title,
           content,
-          dueAt: dueAt ? new Date(dueAt) : null,
+          dueAt: dueDate,
+          warningHours: parseFloat(warningHours),
+          dangerHours: parseFloat(dangerHours),
         },
       });
       return Response.json(note);
@@ -39,7 +54,9 @@ export async function POST(req) {
         data: {
           title,
           content,
-          dueAt: dueAt ? new Date(dueAt) : null,
+          dueAt: dueDate,
+          warningHours: parseFloat(warningHours),
+          dangerHours: parseFloat(dangerHours),
         },
       });
       return Response.json(note);

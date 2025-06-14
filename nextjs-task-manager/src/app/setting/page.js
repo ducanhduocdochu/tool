@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import { MoonIcon, SunIcon } from "@radix-ui/react-icons"
+import LoginForm from "@/components/LoginForm"
 
 export default function SettingPage() {
   const [hasPassword, setHasPassword] = useState(false)
@@ -14,6 +15,17 @@ export default function SettingPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [message, setMessage] = useState("")
   const { theme, setTheme } = useTheme()
+    const [authenticated, setAuthenticated] = useState(false);
+  
+    useEffect(() => {
+      fetch("/api/auth/check")
+        .then((res) => res.json())
+        .then((data) => {
+          setAuthenticated(data.authenticated);
+        });
+    }, []);
+  
+
 
   useEffect(() => {
     fetch("/api/auth/check-exist")
@@ -58,7 +70,9 @@ const handleSubmit = async () => {
     setMessage("❌ Failed to send request: " + err.message)
   }
 }
-
+    if (!authenticated) {
+      return <LoginForm onLogin={() => setAuthenticated(true)} />;
+    }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 rounded shadow bg-white dark:bg-zinc-900 dark:text-white">

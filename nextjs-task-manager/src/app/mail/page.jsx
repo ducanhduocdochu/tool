@@ -1,20 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { MailIcon, PlusIcon } from 'lucide-react'
+import LoginForm from '@/components/LoginForm'
 
 export default function EmailManager() {
+  const [authenticated, setAuthenticated] = useState(false);
   const [emailAccounts, setEmailAccounts] = useState([
     { id: 'gmail_1', label: 'Gmail - john@gmail.com' },
     { id: 'outlook_1', label: 'Outlook - john@outlook.com' },
   ])
   const [selectedEmailId, setSelectedEmailId] = useState(null)
-
+    useEffect(() => {
+      fetch("/api/auth/check")
+        .then((res) => res.json())
+        .then((data) => {
+          setAuthenticated(data.authenticated);
+        });
+    }, []);
+  
+    if (!authenticated) {
+      return <LoginForm onLogin={() => setAuthenticated(true)} />;
+    }
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Tiêu đề */}
