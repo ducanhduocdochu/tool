@@ -66,7 +66,7 @@ export async function GET(request) {
 
   const [tasks, total] = await Promise.all([
     prisma.task.findMany({
-      where: filters,
+      where: {},
       orderBy: { [sortBy]: sortOrder },
       skip,
       take,
@@ -76,10 +76,16 @@ export async function GET(request) {
 
   return Response.json({ tasks, total, page, pageSize })
 }
+
+function applyTimezoneOffset(dateStr, offsetMinutes = 420) {
+  const localDate = new Date(dateStr);
+  const utcDate = new Date(localDate.getTime() - offsetMinutes * 60000);
+  return utcDate;
+}
+
 // POST: Tạo task mới
 export async function POST(request) {
   const body = await request.json()
-  console.log(body)
   const { title, description, status, priority, progress, startTime, endTime, tags } = body
 
   if (!title) {
@@ -98,8 +104,8 @@ export async function POST(request) {
       status,
       priority,
       progress,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
+      startTime: (new Date(startTime)),
+      endTime: (new Date(endTime)),
       tags: Array.isArray(tags)
         ? tags
         : typeof tags === 'string'
@@ -118,8 +124,8 @@ export async function PUT(request) {
   if (!id) return new Response(JSON.stringify({ error: 'Task ID required' }), { status: 400 })
 
   // Xử lý đúng kiểu dữ liệu cho các trường
-  if (updateData.startTime) updateData.startTime = new Date(updateData.startTime)
-  if (updateData.endTime) updateData.endTime = new Date(updateData.endTime)
+  if (updateData.startTime) updateData.startTime = (new Date(updateData.startTime))
+  if (updateData.endTime) updateData.endTime = (new Date(updateData.endTime))
   if (updateData.tags) {
     updateData.tags = Array.isArray(updateData.tags)
       ? updateData.tags
