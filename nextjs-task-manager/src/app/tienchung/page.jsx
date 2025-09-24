@@ -25,7 +25,7 @@ export default function NotePage() {
     id: null,
     title: "",
     content: "",
-    dueAt: "",
+    dueAt: toLocalISOString(),
     warningHours: 2,
     dangerHours: 0.5,
   });
@@ -74,7 +74,7 @@ export default function NotePage() {
         id: null,
         title: "",
         content: "",
-        dueAt: "",
+        dueAt: toLocalISOString(),
         warningHours: 2,
         dangerHours: 1,
       });
@@ -135,6 +135,12 @@ export default function NotePage() {
     return "border-green-500"; // bình thường – màu xanh lá
   };
 
+  function toLocalISOString(date = new Date()) {
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60000);
+    return localDate.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+  }
+
   const getTitleColor = (note) => {
     if (!note.dueAt) return "";
     const due = new Date(note.dueAt);
@@ -179,15 +185,15 @@ export default function NotePage() {
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium mb-1">Due At</label>
               <OneMinuteDatetimePicker
                 value={form.dueAt}
                 onChange={(v) => setForm({ ...form, dueAt: v })}
               />
-            </div>
+            </div> */}
 
-            <div className="flex gap-4">
+            {/* <div className="flex gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium mb-1">
                   Warning Hours
@@ -218,7 +224,7 @@ export default function NotePage() {
                   disabled={loading}
                 />
               </div>
-            </div>
+            </div> */}
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving..." : form.id ? "Update" : "Add"} Note
