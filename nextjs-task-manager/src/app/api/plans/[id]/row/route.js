@@ -3,38 +3,42 @@ const prisma = new PrismaClient()
 
 export async function POST(req, context) {
   const params = await context.params
-
   const id = params?.id
+
   if (!id) {
     return Response.json({ error: 'Missing plan id' }, { status: 400 })
   }
 
-  const body = await req.json()
-  const { position } = body
+  const { position } = await req.json()
 
+  // B1: Tìm các ô cần shift xuống
   const cells = await prisma.planData.findMany({
-    where: { planId: id }
+    where: {
+      planId: id,
+      row: { gte: position }
+    }
   })
 
-  const updates = cells
-    .filter((cell) => cell.row >= position)
-    .map((cell) =>
-      prisma.planData.update({
-        where: {
-          planId_row_column: {
-            planId: cell.planId,
-            row: cell.row,
-            column: cell.column
-          }
-        },
-        data: { row: cell.row + 1 }
-      })
-    )
+  // B2: Xoá các ô đó
+  await prisma.planData.deleteMany({
+    where: {
+      planId: id,
+      row: { gte: position }
+    }
+  })
 
-  await prisma.$transaction(updates)
+  // B3: Tạo lại các ô đó với row + 1
+  const shiftedCells = cells.map(cell => ({
+    planId: id,
+    row: cell.row + 1,
+    column: cell.column,
+    value: cell.value
+  }))
 
-  const maxColumn = Math.max(...cells.map(cell => cell.column), 0)
+  await prisma.planData.createMany({ data: shiftedCells })
 
+  // B4: Tạo dòng mới (rỗng)
+  const maxColumn = Math.max(...cells.map(c => c.column), 0)
   const newRowData = Array.from({ length: maxColumn + 1 }).map((_, column) => ({
     planId: id,
     row: position,
@@ -42,11 +46,9 @@ export async function POST(req, context) {
     value: ''
   }))
 
-  await prisma.planData.createMany({
-    data: newRowData
-  })
+  await prisma.planData.createMany({ data: newRowData })
 
-  return Response.json({ message: 'Row inserted' })
+  return Response.json({ message: 'Row inserted (safe strategy)' })
 }
 
 export async function DELETE(req, context) {

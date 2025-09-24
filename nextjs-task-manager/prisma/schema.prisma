@@ -108,10 +108,12 @@ enum PlanStatus {
 }
 
 model Note {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  content   String
-  dueAt     DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  content       String
+  dueAt         DateTime
+  warningHours  Int      // ⏳ Số giờ trước hạn để cảnh báo (ví dụ: 2 = cảnh báo trước 2h)
+  dangerHours   Int      // 🚨 Số giờ trước hạn để báo đỏ (ví dụ: 0.5 = báo đỏ trước 30 phút)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

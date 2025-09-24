@@ -11,48 +11,52 @@ export async function POST(req, context) {
     return Response.json({ error: "Missing plan id" }, { status: 400 })
   }
 
-
   const { position } = await req.json()
 
-  const cells = await prisma.planData.findMany({ where: { planId: id } })
+  // B1: Tìm các cell cần shift sang phải
+  const cells = await prisma.planData.findMany({
+    where: {
+      planId: id,
+      column: { gte: position }
+    }
+  })
 
-  const updates = cells
-    .filter(cell => cell.column >= position)
-    .map(cell =>
-      prisma.planData.update({
-        where: {
-          planId_row_column: {
-            planId: id,
-            row: cell.row,
-            column: cell.column
-          }
-        },
-        data: { column: cell.column + 1 }
-      })
-    )
+  // B2: Xoá các cell đó
+  await prisma.planData.deleteMany({
+    where: {
+      planId: id,
+      column: { gte: position }
+    }
+  })
 
-  await prisma.$transaction(updates)
+  // B3: Tạo lại với column + 1
+  const shiftedCells = cells.map(cell => ({
+    planId: id,
+    row: cell.row,
+    column: cell.column + 1,
+    value: cell.value
+  }))
+  await prisma.planData.createMany({ data: shiftedCells })
 
-  // Nếu không có dòng nào, bỏ qua
+  // B4: Lấy danh sách row hiện có để chèn cột mới
   const rowResult = await prisma.planData.findMany({
     where: { planId: id },
     select: { row: true },
     distinct: ['row']
   })
-
   const rows = rowResult.map(r => r.row)
-  if (rows.length > 0) {
-    const newCells = rows.map(row => ({
-      planId: id,
-      row,
-      column: position,
-      value: ''
-    }))
-    await prisma.planData.createMany({ data: newCells })
-  }
 
-  return Response.json({ message: 'Column inserted' })
+  const newCells = rows.map(row => ({
+    planId: id,
+    row,
+    column: position,
+    value: ''
+  }))
+  await prisma.planData.createMany({ data: newCells })
+
+  return Response.json({ message: "Column inserted (safe strategy)" })
 }
+
 
 // Xoá cột
 export async function DELETE(req, context) {

@@ -60,6 +60,7 @@ export default function TaskManagerView({
     })
     const res = await fetch(`/api/tasks?${params.toString()}`)
     const data = await res.json()
+    console.log(data)
     setTasks(data.tasks)
     setTotal(data.total)
     setLoading(false)

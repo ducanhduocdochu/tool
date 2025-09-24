@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   format,
   startOfWeek,
@@ -45,94 +51,91 @@ export default function ScheduleView({
   const [draggingTask, setDraggingTask] = useState(null);
   const [dragPos, setDragPos] = useState(null);
   const [resizingTask, setResizingTask] = useState(null); // {taskId, type: "start"|"end"}
-const [resizePos, setResizePos] = useState(null); // {dayIdx, slotIdx}
-const resizePosRef = useRef(resizePos);
-useEffect(() => { 
-  resizePosRef.current = resizePos; 
-}, [resizePos]);
+  const [resizePos, setResizePos] = useState(null); // {dayIdx, slotIdx}
+  const resizePosRef = useRef(resizePos);
+  useEffect(() => {
+    resizePosRef.current = resizePos;
+  }, [resizePos]);
 
+  // async function handleResizeCommit() {
+  //  const currentResizePos = resizePosRef.current;
+  //   if (!resizingTask || !currentResizePos) {
+  //     setResizingTask(null);
+  //     setResizePos(null);
+  //     document.body.style.userSelect = "";
+  //     return;
+  //   }
 
-// async function handleResizeCommit() {
-//  const currentResizePos = resizePosRef.current;
-//   if (!resizingTask || !currentResizePos) {
-//     setResizingTask(null);
-//     setResizePos(null);
-//     document.body.style.userSelect = "";
-//     return;
-//   }
+  //   setLoading2(true);
+  //   const task = tasks.find(t => t.id === resizingTask.taskId);
+  //   let newStart = new Date(task.startTime);
+  //   let newEnd = new Date(task.endTime);
 
-  
-//   setLoading2(true);
-//   const task = tasks.find(t => t.id === resizingTask.taskId);
-//   let newStart = new Date(task.startTime);
-//   let newEnd = new Date(task.endTime);
+  //   if (resizingTask.type === "start") {
+  //     const hour = Math.floor(currentResizePos .slotIdx / 6);
+  //     const minute = (currentResizePos .slotIdx % 6) * 10;
+  //     newStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate(), hour, minute, 0, 0);
+  //     if (newStart >= newEnd) {
+  //       newStart = new Date(newEnd.getTime() - 10 * 60000); // Ensure start time is before end time
+  //     }
+  //   } else if (resizingTask.type === "end") {
+  //     const hour = Math.floor(currentResizePos .slotIdx / 6);
+  //     const minute = (currentResizePos .slotIdx % 6) * 10;
+  //     newEnd = new Date(newEnd.getFullYear(), newEnd.getMonth(), newEnd.getDate(), hour, minute, 0, 0);
+  //     if (newEnd <= newStart) {
+  //       newEnd = new Date(newStart.getTime() + 10 * 60000); // Ensure end time is after start time
+  //     }
+  //   }
 
-//   if (resizingTask.type === "start") {
-//     const hour = Math.floor(currentResizePos .slotIdx / 6);
-//     const minute = (currentResizePos .slotIdx % 6) * 10;
-//     newStart = new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate(), hour, minute, 0, 0);
-//     if (newStart >= newEnd) {
-//       newStart = new Date(newEnd.getTime() - 10 * 60000); // Ensure start time is before end time
-//     }
-//   } else if (resizingTask.type === "end") {
-//     const hour = Math.floor(currentResizePos .slotIdx / 6);
-//     const minute = (currentResizePos .slotIdx % 6) * 10;
-//     newEnd = new Date(newEnd.getFullYear(), newEnd.getMonth(), newEnd.getDate(), hour, minute, 0, 0);
-//     if (newEnd <= newStart) {
-//       newEnd = new Date(newStart.getTime() + 10 * 60000); // Ensure end time is after start time
-//     }
-//   }
+  //   // Update task with new start and end times
+  //   await fetch(`/api/tasks`, {
+  //     method: "PUT",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       id: task.id,
+  //       startTime: newStart,
+  //       endTime: newEnd,
+  //     }),
+  //   });
 
-//   // Update task with new start and end times
-//   await fetch(`/api/tasks`, {
-//     method: "PUT",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({
-//       id: task.id,
-//       startTime: newStart,
-//       endTime: newEnd,
-//     }),
-//   });
+  //   setResizingTask(null);
+  //   setResizePos(null);
+  //   setLoading2(false);
+  //   document.body.style.userSelect = "";
+  //   fetchTasks();
+  // }
 
-//   setResizingTask(null);
-//   setResizePos(null);
-//   setLoading2(false);
-//   document.body.style.userSelect = "";
-//   fetchTasks();
-// }
+  // Mouse move khi resize
+  // useEffect(() => {
+  //   if (!resizingTask) return;
+  //   function onMouseMove(e) {
+  //   console.log('[RESIZE] onMouseMove CALLED', {e, resizingTask});
+  //     const col = document.querySelector(`[data-day-idx="${resizingTask.dayIdx}"]`);
+  //     if (!col) return;
+  //     const rect = col.getBoundingClientRect();
+  //     const y = e.clientY - rect.top;
+  //     const afterHeader = y - 56;
+  //     if (afterHeader < 0) return;
 
+  //     const slotIdx = Math.max(0, Math.min(143, Math.floor(afterHeader / 24)));
+  //     console.log("[RESIZE] MouseMove", { dayIdx: resizingTask.dayIdx, slotIdx });
+  //     setResizePos({ dayIdx: resizingTask.dayIdx, slotIdx });
+  //   }
 
-// Mouse move khi resize
-// useEffect(() => {
-//   if (!resizingTask) return;
-//   function onMouseMove(e) {
-//   console.log('[RESIZE] onMouseMove CALLED', {e, resizingTask});
-//     const col = document.querySelector(`[data-day-idx="${resizingTask.dayIdx}"]`);
-//     if (!col) return;
-//     const rect = col.getBoundingClientRect();
-//     const y = e.clientY - rect.top;
-//     const afterHeader = y - 56;
-//     if (afterHeader < 0) return;
+  //   function onMouseUp() {
+  //     console.log("[RESIZE] MouseUp", { resizingTask, resizePos });
+  //     handleResizeCommit();
+  //     document.body.style.userSelect = "";
+  //   }
 
-//     const slotIdx = Math.max(0, Math.min(143, Math.floor(afterHeader / 24)));
-//     console.log("[RESIZE] MouseMove", { dayIdx: resizingTask.dayIdx, slotIdx });
-//     setResizePos({ dayIdx: resizingTask.dayIdx, slotIdx });
-//   }
+  //   window.addEventListener("mousemove", onMouseMove);
+  //   window.addEventListener("mouseup", onMouseUp);
 
-//   function onMouseUp() {
-//     console.log("[RESIZE] MouseUp", { resizingTask, resizePos });
-//     handleResizeCommit();
-//     document.body.style.userSelect = "";
-//   }
-
-//   window.addEventListener("mousemove", onMouseMove);
-//   window.addEventListener("mouseup", onMouseUp);
-
-//   return () => {
-//     window.removeEventListener("mousemove", onMouseMove);
-//     window.removeEventListener("mouseup", onMouseUp);
-//   };
-// }, [resizingTask]);
+  //   return () => {
+  //     window.removeEventListener("mousemove", onMouseMove);
+  //     window.removeEventListener("mouseup", onMouseUp);
+  //   };
+  // }, [resizingTask]);
 
   function getTaskSlotIdx(task) {
     const date = new Date(task.startTime);
@@ -325,16 +328,21 @@ useEffect(() => {
       startTimeFrom,
       startTimeTo,
     });
+    console.log({
+      pageSize: filters.pageSize,
+      startTimeFrom,
+      startTimeTo,
+    })
     const res = await fetch(`/api/tasks?${params.toString()}`);
     const data = await res.json();
+    console.log(data)
     setTasks(data.tasks);
     setLoading(false);
   }, [filters.pageSize, startWeek]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
-
+  fetchTasks();
+}, [fetchTasks, weekOffset]);
   // Lấy task của ngày
   const tasksOfDay = (day) =>
     tasks
@@ -604,7 +612,7 @@ useEffect(() => {
                         )} - ${format(parseISO(task.endTime), "HH:mm")}`}
                       </span>
                     </div>
-{/* <div
+                    {/* <div
   className="absolute left-0 bottom-0 w-full h-1 cursor-ns-resize z-10"
   style={{ pointerEvents: "auto" }}
   onMouseDown={(e) => {
