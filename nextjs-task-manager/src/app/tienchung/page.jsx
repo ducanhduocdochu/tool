@@ -91,7 +91,7 @@ export default function NotePage() {
       id: note.id,
       title: note.title,
       content: note.content,
-      dueAt: note.dueAt?.slice(0, 16) || "",
+      dueAt: toLocalISOString(),
       warningHours: note.warningHours ?? 2,
       dangerHours: note.dangerHours ?? 0.5,
     });
@@ -232,7 +232,7 @@ export default function NotePage() {
           </form>
         </div>
         <div className="w-full lg:w-1/2">
-          <div className="space-y-4 w-full">
+          <div className="space-y-4 w-full mt-10">
             {notes.map((note) => (
               <Card
                 key={note.id}
