@@ -17,19 +17,6 @@ import AccountList from "@/components/FinanceBot/AccountList";
 import Dashboard from "@/components/FinanceBot/Dashboard";
 
 export default function ChatbotPage() {
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/auth/check")
-      .then((res) => res.json())
-      .then((data) => {
-        setAuthenticated(data.authenticated);
-      });
-  }, []);
-
-  if (!authenticated) {
-    return <LoginForm onLogin={() => setAuthenticated(true)} />;
-  }
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
       <header className="flex justify-between items-center p-4 shadow bg-white dark:bg-zinc-900">
