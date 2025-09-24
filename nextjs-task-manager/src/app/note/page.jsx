@@ -10,16 +10,15 @@ import OneMinuteDatetimePicker from "@/components/ui/pickerdatedefault";
 import LoginForm from "@/components/LoginForm";
 
 export default function NotePage() {
-    const [authenticated, setAuthenticated] = useState(false);
-  
-    useEffect(() => {
-      fetch("/api/auth/check")
-        .then((res) => res.json())
-        .then((data) => {
-          setAuthenticated(data.authenticated);
-        });
-    }, []);
-  
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/check")
+      .then((res) => res.json())
+      .then((data) => {
+        setAuthenticated(data.authenticated);
+      });
+  }, []);
 
   const [notes, setNotes] = useState([]);
   const [form, setForm] = useState({
@@ -148,90 +147,92 @@ export default function NotePage() {
     if (now >= warningTime) return "text-orange-500";
     return "";
   };
-    if (!authenticated) {
-      return <LoginForm onLogin={() => setAuthenticated(true)} />;
-    }
+  if (!authenticated) {
+    return <LoginForm onLogin={() => setAuthenticated(true)} />;
+  }
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="flex flex-col lg:flex-row justify-between">
         <div className="mr-10 w-full lg:w-1/2">
-        <form onSubmit={handleSubmit} className="space-y-4 w-full">
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <Input
-              placeholder="Enter title"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Content</label>
-            <Textarea
-              placeholder="Enter content"
-              rows={4}
-              value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Due At</label>
-            <OneMinuteDatetimePicker
-              value={form.dueAt}
-              onChange={(v) => setForm({ ...form, dueAt: v })}
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">
-                Warning Hours
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-4 w-full">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
               <Input
-                type="number"
-                step="0.1"
-                min="0"
-                value={form.warningHours}
-                onChange={(e) =>
-                  setForm({ ...form, warningHours: e.target.value })
-                }
+                placeholder="Enter title"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
                 disabled={loading}
               />
             </div>
-            <div className="flex-1">
+
+            <div>
               <label className="block text-sm font-medium mb-1">
-                Danger Hours
+                Amount 'VND'
               </label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                value={form.dangerHours}
-                onChange={(e) =>
-                  setForm({ ...form, dangerHours: e.target.value })
-                }
+              <Textarea
+                placeholder="Enter amount 'VND'"
+                rows={4}
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
                 disabled={loading}
               />
             </div>
-          </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Saving..." : form.id ? "Update" : "Add"} Note
-          </Button>
-        </form>
-      </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Due At</label>
+              <OneMinuteDatetimePicker
+                value={form.dueAt}
+                onChange={(v) => setForm({ ...form, dueAt: v })}
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">
+                  Warning Hours
+                </label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.warningHours}
+                  onChange={(e) =>
+                    setForm({ ...form, warningHours: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">
+                  Danger Hours
+                </label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.dangerHours}
+                  onChange={(e) =>
+                    setForm({ ...form, dangerHours: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Saving..." : form.id ? "Update" : "Add"} Note
+            </Button>
+          </form>
+        </div>
         <div className="w-full lg:w-1/2">
           <div className="space-y-4 w-full">
             {notes.map((note) => (
               <Card
-  key={note.id}
-  className={`w-full border-2 ${getNoteStatusColor(note)} ${
-    new Date() >= new Date(note.dueAt) ? "blinking-card" : ""
-  }`}
->
+                key={note.id}
+                className={`w-full border-2 ${getNoteStatusColor(note)} ${
+                  new Date() >= new Date(note.dueAt) ? "blinking-card" : ""
+                }`}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <CardTitle
@@ -290,7 +291,6 @@ export default function NotePage() {
             ))}
           </div>
         </div>
-        
       </div>
     </div>
   );
