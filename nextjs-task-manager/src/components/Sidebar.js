@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { MenuIcon, XIcon } from "lucide-react"; // thêm icon hamburger/close
+import { BookIcon, MenuIcon, XIcon } from "lucide-react"; // thêm icon hamburger/close
 
 const menu = [
   { title: "Home", path: "/", icon: <HomeIcon className="w-4 h-4 mr-2" /> },
@@ -60,6 +60,11 @@ const menu = [
     title: "TienChung",
     path: "/tienchung",
     icon: <GearIcon className="w-4 h-4 mr-2" />,
+  },
+  {
+    title: "Vocabulary",
+    path: "/words",
+    icon: <BookIcon className="w-4 h-4 mr-2" />,
   },
 ];
 

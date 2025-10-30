@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
           <ThemeToggle />
           <div className="flex min-h-screen">
             <Sidebar />
-            <main className="md:pl-64 flex-1 mt-20">{children}</main>
+            <main className="md:pl-64 flex-1">{children}</main>
           </div>
         </Providers>
       </body>
