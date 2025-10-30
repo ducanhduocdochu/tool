@@ -300,7 +300,10 @@ export default function VocabularyApp() {
         className="p-4 rounded-lg border bg-card text-card-foreground shadow-sm dark:bg-gray-800 dark:border-gray-700 flex flex-col justify-between"
       >
         <div>
+          <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold mb-1">{vocab.word}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 italic">{vocab.partOfSpeech} </p>
+          </div>
           {vocab.ipa && (
             <p className="text-sm text-blue-500 italic mb-1">/{vocab.ipa}/</p>
           )}
